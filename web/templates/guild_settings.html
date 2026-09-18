@@ -31,12 +31,14 @@
     {% endif %}
     <label>
       Tipografía de la tarjeta
-      <select name="welcome_font">
+      <select id="welcome-font-select" name="welcome_font">
         {% for key, choice in font_choices.items() %}
         <option value="{{ key }}" {% if config.welcome_font == key %}selected{% endif %}>{{ choice.label }}</option>
         {% endfor %}
       </select>
     </label>
+    <p class="hint">Vista previa (con tu propio avatar y el mensaje de arriba):</p>
+    <img id="welcome-font-preview" class="bg-preview" alt="Vista previa de la tarjeta" />
   </fieldset>
 
   <fieldset>
@@ -136,4 +138,32 @@
   </fieldset>
 </form>
 {% endif %}
+
+<script>
+(function () {
+  var basePath = {{ base_path | tojson }};
+  var guildId = {{ config.guild_id }};
+  var select = document.getElementById("welcome-font-select");
+  var messageField = document.querySelector('textarea[name="welcome_message"]');
+  var preview = document.getElementById("welcome-font-preview");
+  if (!select || !preview) return;
+
+  var timer = null;
+  function updatePreview() {
+    var font = encodeURIComponent(select.value);
+    var message = encodeURIComponent(messageField ? messageField.value : "");
+    preview.src = basePath + "/dashboard/" + guildId + "/welcome-preview?font=" + font + "&message=" + message + "&_=" + Date.now();
+  }
+  function scheduleUpdate() {
+    clearTimeout(timer);
+    timer = setTimeout(updatePreview, 300);
+  }
+
+  select.addEventListener("change", updatePreview);
+  if (messageField) {
+    messageField.addEventListener("input", scheduleUpdate);
+  }
+  updatePreview();
+})();
+</script>
 {% endblock %}

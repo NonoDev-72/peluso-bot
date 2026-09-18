@@ -1,12 +1,14 @@
 import os
+import tempfile
 import uuid
 
 import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
+from PIL import Image
 
-from bot.welcome_card import DEFAULT_FONT_KEY, FONT_CHOICES
+from bot.welcome_card import DEFAULT_FONT_KEY, FONT_CHOICES, build_welcome_card
 from shared.config import settings
 from shared.database import (
     GuildConfig,
@@ -155,6 +157,54 @@ async def get_welcome_background(guild_id: int, user=Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="No hay imagen de fondo configurada")
 
     return FileResponse(path)
+
+
+@router.get("/{guild_id}/welcome-preview")
+async def welcome_preview(
+    guild_id: int,
+    user=Depends(get_current_user),
+    font: str = DEFAULT_FONT_KEY,
+    message: str = "",
+):
+    guilds = await fetch_manageable_guilds(user.access_token)
+    if not any(int(g["id"]) == guild_id for g in guilds):
+        raise HTTPException(status_code=403, detail="No tenes permisos sobre ese servidor")
+
+    with SessionLocal() as session:
+        config = get_or_create_guild_config(session, guild_id)
+        background_path = config.welcome_background_path
+        guild_name = config.guild_name
+
+    font_key = font if font in FONT_CHOICES else DEFAULT_FONT_KEY
+    template_text = message.strip() or "¡Bienvenido/a {member} a **{guild}**! Ya somos {member_count}."
+    try:
+        preview_text = template_text.format(member=user.username, guild=guild_name or "tu servidor", member_count=100)
+    except (KeyError, IndexError, ValueError):
+        preview_text = template_text
+
+    avatar_url = (
+        f"https://cdn.discordapp.com/avatars/{user.discord_id}/{user.avatar_hash}.png?size=256"
+        if user.avatar_hash
+        else "https://cdn.discordapp.com/embed/avatars/0.png"
+    )
+    async with httpx.AsyncClient() as client:
+        avatar_response = await client.get(avatar_url)
+        avatar_bytes = avatar_response.content
+
+    temp_bg_path = None
+    bg_path = background_path if background_path and os.path.isfile(background_path) else None
+    if bg_path is None:
+        temp_bg_path = tempfile.NamedTemporaryFile(suffix=".png", delete=False).name
+        Image.new("RGB", (960, 540), (35, 35, 60)).save(temp_bg_path)
+        bg_path = temp_bg_path
+
+    try:
+        buffer = build_welcome_card(bg_path, avatar_bytes, preview_text, font_key)
+    finally:
+        if temp_bg_path:
+            os.unlink(temp_bg_path)
+
+    return Response(content=buffer.getvalue(), media_type="image/png")
 
 
 @router.post("/{guild_id}/voice-rooms")
