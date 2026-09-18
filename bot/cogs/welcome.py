@@ -40,19 +40,23 @@ class Welcome(commands.Cog):
         if channel is None:
             return
 
-        text = config.welcome_message.format(
-            member=member.mention,
-            guild=member.guild.name,
-            member_count=member.guild.member_count,
-        )
         card_text = config.welcome_message.format(
             member=member.display_name,
             guild=member.guild.name,
             member_count=member.guild.member_count,
         )
-
         file = await self._build_welcome_card_file(member, config.welcome_background_path, card_text)
-        await channel.send(text, file=file)
+
+        if file is not None:
+            # Con imagen, el mensaje de bienvenida ya queda dibujado en la tarjeta: no se repite como texto.
+            await channel.send(file=file)
+        else:
+            text = config.welcome_message.format(
+                member=member.mention,
+                guild=member.guild.name,
+                member_count=member.guild.member_count,
+            )
+            await channel.send(text)
 
     async def _build_welcome_card_file(
         self, member: discord.Member, background_path: str | None, card_text: str
