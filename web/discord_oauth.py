@@ -14,8 +14,10 @@ SCOPES = "identify guilds"
 # Permiso "Manage Server" requerido para administrar la config de un guild desde el panel
 MANAGE_GUILD_PERMISSION = 0x20
 
-# /users/@me/guilds tiene un rate limit mas agresivo que el resto de la API de Discord
-GUILDS_CACHE_TTL_SECONDS = 30
+# /users/@me/guilds tiene un rate limit mas agresivo que el resto de la API de Discord.
+# El preview de la tarjeta de bienvenida la consulta en cada cambio de fuente/texto, así que
+# el cache dura más que en el resto del panel para no comerse el rate limit con ese uso repetido.
+GUILDS_CACHE_TTL_SECONDS = 120
 _guilds_cache: dict[str, tuple[float, list[dict]]] = {}
 
 

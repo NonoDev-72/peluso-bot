@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 import uuid
@@ -21,6 +22,8 @@ from shared.database import (
 )
 from web.auth import get_current_user
 from web.discord_oauth import fetch_guild_roles, fetch_guild_voice_channels, fetch_manageable_guilds
+
+log = logging.getLogger("peluso")
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 templates = Jinja2Templates(directory="web/templates")
@@ -169,6 +172,14 @@ async def welcome_preview(
 ):
     guilds = await fetch_manageable_guilds(user.access_token)
     if not any(int(g["id"]) == guild_id for g in guilds):
+        log.warning(
+            "welcome-preview: %s (%s) no tiene guild_id=%s en su lista manejable (%d guilds: %s)",
+            user.username,
+            user.discord_id,
+            guild_id,
+            len(guilds),
+            [g["id"] for g in guilds],
+        )
         raise HTTPException(status_code=403, detail="No tenes permisos sobre ese servidor")
 
     with SessionLocal() as session:

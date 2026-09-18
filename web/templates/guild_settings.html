@@ -159,10 +159,16 @@
     timer = setTimeout(updatePreview, 300);
   }
 
-  select.addEventListener("change", updatePreview);
+  select.addEventListener("change", scheduleUpdate);
   if (messageField) {
     messageField.addEventListener("input", scheduleUpdate);
   }
+  preview.addEventListener("error", function () {
+    preview.style.visibility = "hidden";
+  });
+  preview.addEventListener("load", function () {
+    preview.style.visibility = "visible";
+  });
   updatePreview();
 })();
 </script>
