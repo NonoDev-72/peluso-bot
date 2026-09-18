@@ -24,6 +24,7 @@ from web.discord_oauth import fetch_guild_roles, fetch_guild_voice_channels, fet
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 templates = Jinja2Templates(directory="web/templates")
+templates.env.globals["base_path"] = settings.web_base_path
 
 ALLOWED_BACKGROUND_TYPES = {"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp"}
 

@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
+from shared.config import settings
 from web.auth import get_optional_user
 
 router = APIRouter(prefix="/legal", tags=["legal"])
 templates = Jinja2Templates(directory="web/templates")
+templates.env.globals["base_path"] = settings.web_base_path
 
 LAST_UPDATED = "18 de septiembre de 2026"
 
