@@ -8,7 +8,7 @@ from starlette.requests import Request
 from shared.config import settings
 from shared.database import init_db
 from web.auth import get_optional_user
-from web.routes import auth, dashboard
+from web.routes import auth, dashboard, legal
 
 BASE_PATH = settings.web_base_path
 
@@ -32,6 +32,7 @@ async def home(request: Request):
 
 root_router.include_router(auth.router)
 root_router.include_router(dashboard.router)
+root_router.include_router(legal.router)
 app.include_router(root_router)
 
 

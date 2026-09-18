@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Condiciones de servicio - Peluso Bot{% endblock %}
+{% block content %}
+<div class="legal">
+  <a class="back" href="{{ base_path }}/">&larr; Volver</a>
+  <h1>Condiciones de servicio</h1>
+  <p class="legal-updated">Última actualización: {{ last_updated }}</p>
+
+  <p>
+    Estas Condiciones de Servicio ("Condiciones") regulan el acceso y uso de Peluso Bot, incluyendo el
+    bot de Discord y su panel de configuración web (en conjunto, el "Servicio"), operado por Expozcode
+    ("nosotros", "el operador"). Al agregar el bot a un servidor de Discord, iniciar sesión en el panel
+    web o utilizar cualquier función del Servicio, aceptás estas Condiciones. Si no estás de acuerdo, no
+    debés utilizar el Servicio.
+  </p>
+
+  <h2>1. Descripción del Servicio</h2>
+  <p>
+    Peluso Bot es un bot de Discord que ofrece funcionalidades configurables por los administradores de
+    cada servidor, como mensajes automáticos de bienvenida y despedida, y asignación automática de roles
+    a nuevos miembros. El panel web permite a los administradores de un servidor iniciar sesión con su
+    cuenta de Discord y configurar estas funciones para los servidores donde tengan permiso de
+    "Gestionar servidor".
+  </p>
+
+  <h2>2. Requisitos de uso</h2>
+  <p>
+    Para usar el Servicio debés cumplir con las
+    <a href="https://discord.com/terms" target="_blank" rel="noopener">Condiciones de Servicio de Discord</a>
+    y sus
+    <a href="https://discord.com/guidelines" target="_blank" rel="noopener">Directrices de la Comunidad</a>,
+    incluyendo el requisito de edad mínima que Discord establece para el uso de su plataforma. El uso del
+    Servicio en un servidor es responsabilidad de quien lo agrega y de los administradores que configuran
+    sus funciones.
+  </p>
+
+  <h2>3. Uso aceptable</h2>
+  <p>No está permitido usar el Servicio para:</p>
+  <ul>
+    <li>Actividades ilegales o que infrinjan derechos de terceros.</li>
+    <li>Acosar, difamar o dañar a otras personas o comunidades.</li>
+    <li>Intentar explotar, comprometer o interferir con el funcionamiento del bot, el panel web o su infraestructura.</li>
+    <li>Eludir los límites de permisos configurados por Discord o por los administradores del servidor.</li>
+  </ul>
+  <p>
+    Nos reservamos el derecho de restringir o revocar el acceso al Servicio (por ejemplo, retirando el
+    bot de un servidor o suspendiendo el acceso al panel) ante un uso que consideremos abusivo o contrario
+    a estas Condiciones.
+  </p>
+
+  <h2>4. Cuentas y acceso al panel web</h2>
+  <p>
+    El acceso al panel web se realiza mediante el inicio de sesión OAuth2 de Discord. Solo podés
+    administrar la configuración de los servidores donde Discord confirme que tenés el permiso
+    "Gestionar servidor". Sos responsable de los cambios de configuración que realices en los servidores
+    a los que tengas acceso.
+  </p>
+
+  <h2>5. Disponibilidad del Servicio</h2>
+  <p>
+    El Servicio se ofrece "tal cual" y "según disponibilidad". No garantizamos que el bot o el panel web
+    estén disponibles de forma ininterrumpida, libres de errores, o que cumplan con requisitos
+    específicos. Podemos modificar, suspender o discontinuar total o parcialmente el Servicio en
+    cualquier momento, con o sin aviso previo.
+  </p>
+
+  <h2>6. Limitación de responsabilidad</h2>
+  <p>
+    En la máxima medida permitida por la ley aplicable, el operador no será responsable por daños
+    indirectos, incidentales o consecuentes derivados del uso o la imposibilidad de uso del Servicio,
+    incluyendo pérdida de datos de configuración, interrupciones del servicio de Discord, o acciones
+    tomadas por administradores de servidores al configurar el bot.
+  </p>
+
+  <h2>7. Modificaciones de estas Condiciones</h2>
+  <p>
+    Podemos actualizar estas Condiciones en cualquier momento. Los cambios entran en vigencia al
+    publicarse en esta página, indicando la fecha de "Última actualización". El uso continuado del
+    Servicio después de una modificación implica la aceptación de las nuevas Condiciones.
+  </p>
+
+  <h2>8. Terminación</h2>
+  <p>
+    Podés dejar de usar el Servicio en cualquier momento retirando el bot de tu servidor y revocando su
+    acceso OAuth2 desde tu configuración de cuenta de Discord (Configuración de usuario → Autorizaciones).
+    Nosotros podemos suspender o dar de baja el Servicio, o el acceso de un usuario o servidor en
+    particular, ante un incumplimiento de estas Condiciones.
+  </p>
+
+  <h2>9. Ley aplicable</h2>
+  <p>
+    Estas Condiciones se rigen por la legislación española. Para cualquier controversia derivada de estas
+    Condiciones, las partes se someten a los tribunales competentes según la normativa aplicable.
+  </p>
+
+  <h2>10. Contacto</h2>
+  <p>
+    Para consultas sobre estas Condiciones, escribinos a
+    <a href="mailto:nonozomberdeveloper@gmail.com">nonozomberdeveloper@gmail.com</a>.
+  </p>
+</div>
+{% endblock %}

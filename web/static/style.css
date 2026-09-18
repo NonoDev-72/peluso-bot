@@ -59,3 +59,20 @@ input[type="text"], textarea, select {
 }
 .hint { font-size: 0.8rem; color: #888; margin: 0; }
 .hint-error { color: #e57373; }
+.footer {
+  text-align: center;
+  padding: 1.5rem;
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  font-size: 0.8rem;
+  color: #777;
+}
+.footer a { color: #777; text-decoration: none; }
+.footer a:hover { color: #aaa; }
+.footer-sep { margin: 0 0.5rem; }
+.legal { max-width: 720px; margin: 0 auto; line-height: 1.6; }
+.legal h1 { margin-bottom: 0.25rem; }
+.legal-updated { color: #888; font-size: 0.85rem; margin-top: 0; margin-bottom: 2rem; }
+.legal h2 { color: #7289da; font-size: 1.1rem; margin-top: 2rem; }
+.legal p, .legal li { color: #ccc; }
+.legal a { color: #7289da; }
+.legal ul { padding-left: 1.25rem; }
