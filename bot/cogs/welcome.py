@@ -1,7 +1,11 @@
+import logging
+
 import discord
 from discord.ext import commands
 
 from shared.database import SessionLocal, get_or_create_guild_config
+
+log = logging.getLogger("peluso")
 
 
 class Welcome(commands.Cog):
@@ -12,15 +16,29 @@ class Welcome(commands.Cog):
     async def on_member_join(self, member: discord.Member) -> None:
         with SessionLocal() as session:
             config = get_or_create_guild_config(session, member.guild.id, member.guild.name)
-            if not config.welcome_enabled or not config.welcome_channel_id:
-                return
-            message = config.welcome_message
+
+        if config.default_role_id:
+            role = member.guild.get_role(config.default_role_id)
+            if role is None:
+                log.warning("Rol por defecto %s no existe en %s", config.default_role_id, member.guild.name)
+            else:
+                try:
+                    await member.add_roles(role, reason="Rol automatico de bienvenida")
+                except discord.Forbidden:
+                    log.warning(
+                        "Sin permisos para asignar el rol '%s' en %s (revisá la jerarquía de roles)",
+                        role.name,
+                        member.guild.name,
+                    )
+
+        if not config.welcome_enabled or not config.welcome_channel_id:
+            return
 
         channel = member.guild.get_channel(config.welcome_channel_id)
         if channel is None:
             return
 
-        text = message.format(
+        text = config.welcome_message.format(
             member=member.mention,
             guild=member.guild.name,
             member_count=member.guild.member_count,

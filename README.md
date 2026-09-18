@@ -31,7 +31,8 @@ El bot y el panel web son dos procesos independientes que comparten la misma bas
 
 3. Copiar `.env.example` a `.env` y completar los valores (token, client id/secret, etc).
 
-4. Invitar el bot al servidor con permisos de `Manage Server`, `Send Messages` y scope `bot applications.commands`.
+4. Invitar el bot al servidor con permisos de `Manage Server`, `Send Messages`, `Manage Roles` y scope `bot applications.commands`.
+   - Para el rol automático de bienvenida: el rol del **bot** en la jerarquía de Discord tiene que estar por encima del rol que quieras asignar, si no Discord rechaza la asignación.
 
 ## Correr el bot
 

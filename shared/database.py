@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, DateTime, String, create_engine
+from sqlalchemy import BigInteger, Boolean, DateTime, String, create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 from shared.config import settings
@@ -48,11 +48,25 @@ class GuildConfig(Base):
     goodbye_channel_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     goodbye_message: Mapped[str] = mapped_column(String(2000), default="{member} dejó **{guild}**. ¡Hasta pronto!")
 
+    default_role_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 def init_db() -> None:
     Base.metadata.create_all(engine)
+    _run_migrations()
+
+
+def _run_migrations() -> None:
+    """Agrega columnas nuevas a tablas ya existentes (no hay Alembic en este proyecto)."""
+    if not settings.database_url.startswith("sqlite"):
+        return
+    with engine.connect() as conn:
+        existing_columns = {row[1] for row in conn.execute(text("PRAGMA table_info(guild_configs)"))}
+        if "default_role_id" not in existing_columns:
+            conn.execute(text("ALTER TABLE guild_configs ADD COLUMN default_role_id BIGINT"))
+            conn.commit()
 
 
 def get_or_create_guild_config(session, guild_id: int, guild_name: str = "") -> GuildConfig:

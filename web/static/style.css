@@ -49,7 +49,7 @@ fieldset { border: 1px solid #2a2e37; border-radius: 8px; padding: 1rem; display
 legend { padding: 0 0.5rem; color: #7289da; font-weight: 600; }
 label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.9rem; color: #ccc; }
 label.check { flex-direction: row; align-items: center; gap: 0.5rem; }
-input[type="text"], textarea {
+input[type="text"], textarea, select {
   background: #0f1115;
   border: 1px solid #2a2e37;
   border-radius: 6px;
@@ -57,3 +57,5 @@ input[type="text"], textarea {
   padding: 0.5rem;
   font-family: inherit;
 }
+.hint { font-size: 0.8rem; color: #888; margin: 0; }
+.hint-error { color: #e57373; }

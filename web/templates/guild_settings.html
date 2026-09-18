@@ -21,6 +21,27 @@
   </fieldset>
 
   <fieldset>
+    <legend>Rol automático</legend>
+    {% if roles_error %}
+      <p class="hint hint-error">{{ roles_error }}</p>
+      <input type="hidden" name="default_role_id" value="{{ config.default_role_id or '' }}" />
+    {% else %}
+    <label>
+      Rol asignado a los miembros nuevos
+      <select name="default_role_id">
+        <option value="">Ninguno</option>
+        {% for role in roles %}
+        <option value="{{ role.id }}" {% if config.default_role_id == role.id|int %}selected{% endif %}>
+          {{ role.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </label>
+    <p class="hint">El rol del bot en Discord tiene que estar por encima del rol elegido en la jerarquía del servidor, o no podrá asignarlo.</p>
+    {% endif %}
+  </fieldset>
+
+  <fieldset>
     <legend>Despedida</legend>
     <label class="check">
       <input type="checkbox" name="goodbye_enabled" {% if config.goodbye_enabled %}checked{% endif %} />

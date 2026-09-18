@@ -1,3 +1,4 @@
+import httpx
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -5,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from shared.config import settings
 from shared.database import GuildConfig, SessionLocal, get_or_create_guild_config
 from web.auth import get_current_user
-from web.discord_oauth import fetch_manageable_guilds
+from web.discord_oauth import fetch_guild_roles, fetch_manageable_guilds
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 templates = Jinja2Templates(directory="web/templates")
@@ -29,8 +30,17 @@ async def edit_guild(request: Request, guild_id: int, user=Depends(get_current_u
         config = get_or_create_guild_config(session, guild_id)
         session.expunge(config)
 
+    try:
+        roles = await fetch_guild_roles(guild_id)
+        roles_error = None
+    except httpx.HTTPStatusError:
+        roles = []
+        roles_error = "No se pudieron cargar los roles: el bot no está en este servidor o le faltan permisos."
+
     return templates.TemplateResponse(
-        request, "guild_settings.html", {"user": user, "config": config}
+        request,
+        "guild_settings.html",
+        {"user": user, "config": config, "roles": roles, "roles_error": roles_error},
     )
 
 
@@ -45,6 +55,7 @@ async def update_guild(
     goodbye_enabled: bool = Form(False),
     goodbye_channel_id: str = Form(""),
     goodbye_message: str = Form(...),
+    default_role_id: str = Form(""),
 ):
     guilds = await fetch_manageable_guilds(user.access_token)
     if not any(int(g["id"]) == guild_id for g in guilds):
@@ -58,6 +69,7 @@ async def update_guild(
         config.goodbye_enabled = goodbye_enabled
         config.goodbye_channel_id = int(goodbye_channel_id) if goodbye_channel_id else None
         config.goodbye_message = goodbye_message
+        config.default_role_id = int(default_role_id) if default_role_id else None
         session.commit()
 
     return RedirectResponse(f"{settings.web_base_path}/dashboard/{guild_id}", status_code=303)

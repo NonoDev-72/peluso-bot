@@ -73,3 +73,15 @@ async def fetch_manageable_guilds(access_token: str) -> list[dict]:
     ]
     _guilds_cache[access_token] = (time.monotonic(), manageable)
     return manageable
+
+
+async def fetch_guild_roles(guild_id: int) -> list[dict]:
+    """Roles asignables del servidor, consultados con el token del bot (no del usuario)."""
+    headers = {"Authorization": f"Bot {settings.discord_token}"}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{API_BASE}/guilds/{guild_id}/roles", headers=headers)
+        response.raise_for_status()
+        roles = response.json()
+
+    assignable = [role for role in roles if role["id"] != str(guild_id) and not role.get("managed")]
+    return sorted(assignable, key=lambda r: r["position"], reverse=True)
