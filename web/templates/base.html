@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Peluso Bot{% endblock %}</title>
+  <link rel="stylesheet" href="{{ base_path }}/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ base_path }}/">Peluso Bot</a>
+    {% if user %}
+      <span class="user">{{ user.username }}</span>
+      <a class="btn btn-ghost" href="{{ base_path }}/auth/logout">Cerrar sesión</a>
+    {% endif %}
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

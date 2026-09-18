@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Tus servidores{% endblock %}
+{% block content %}
+<h1>Tus servidores</h1>
+<p>Elegí un servidor para configurar el bot.</p>
+<div class="grid">
+  {% for guild in guilds %}
+  <a class="card" href="{{ base_path }}/dashboard/{{ guild.id }}">
+    {% if guild.icon %}
+      <img class="icon" src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png" alt="" />
+    {% else %}
+      <div class="icon icon-placeholder">{{ guild.name[0] }}</div>
+    {% endif %}
+    <span>{{ guild.name }}</span>
+  </a>
+  {% else %}
+  <p>No administrás ningún servidor con este bot todavía.</p>
+  {% endfor %}
+</div>
+{% endblock %}

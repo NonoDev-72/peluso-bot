@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Configuración del servidor{% endblock %}
+{% block content %}
+<a class="back" href="{{ base_path }}/dashboard">&larr; Volver</a>
+<h1>Bienvenida y despedida</h1>
+<form method="post" class="form">
+  <fieldset>
+    <legend>Bienvenida</legend>
+    <label class="check">
+      <input type="checkbox" name="welcome_enabled" {% if config.welcome_enabled %}checked{% endif %} />
+      Activar mensaje de bienvenida
+    </label>
+    <label>
+      ID del canal
+      <input type="text" name="welcome_channel_id" value="{{ config.welcome_channel_id or '' }}" placeholder="123456789012345678" />
+    </label>
+    <label>
+      Mensaje (usá {member}, {guild}, {member_count})
+      <textarea name="welcome_message" rows="3">{{ config.welcome_message }}</textarea>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Despedida</legend>
+    <label class="check">
+      <input type="checkbox" name="goodbye_enabled" {% if config.goodbye_enabled %}checked{% endif %} />
+      Activar mensaje de despedida
+    </label>
+    <label>
+      ID del canal
+      <input type="text" name="goodbye_channel_id" value="{{ config.goodbye_channel_id or '' }}" placeholder="123456789012345678" />
+    </label>
+    <label>
+      Mensaje (usá {member}, {guild}, {member_count})
+      <textarea name="goodbye_message" rows="3">{{ config.goodbye_message }}</textarea>
+    </label>
+  </fieldset>
+
+  <button class="btn btn-primary" type="submit">Guardar cambios</button>
+</form>
+{% endblock %}
