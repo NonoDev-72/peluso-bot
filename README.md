@@ -1,4 +1,4 @@
-# 🎀 Peluso Bot
+# 🤖 Peluso Bot
 
 Bot de Discord (Python + [discord.py](https://discordpy.readthedocs.io/)) con un panel web propio (FastAPI) para
 configurar todo sin tocar código: bienvenidas con tarjeta de imagen, despedidas, rol automático y salas de voz
