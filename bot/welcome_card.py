@@ -12,8 +12,9 @@ MAX_FONT_SIZE = 36
 MIN_FONT_SIZE = 14
 
 PANEL_FILL = (0, 0, 0, 140)
-PANEL_PADDING_X_RATIO = 0.04
-PANEL_PADDING_Y_RATIO = 0.025
+PANEL_PADDING_X_RATIO = 0.06
+PANEL_PADDING_Y_RATIO = 0.05
+AVATAR_TEXT_GAP_RATIO = 0.03
 
 _MARKDOWN_PATTERN = re.compile(r"[*_`~]")
 
@@ -61,8 +62,9 @@ def build_welcome_card(background_path: str, avatar_bytes: bytes, message: str =
     measure = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
 
     avatar_size = int(min(background.size) * AVATAR_SIZE_RATIO)
-    avatar_top = int(background.height * 0.08)
-    text_gap = int(background.height * 0.015)
+    text_gap = int(background.height * AVATAR_TEXT_GAP_RATIO)
+    padding_x = int(background.width * PANEL_PADDING_X_RATIO)
+    padding_y = int(background.height * PANEL_PADDING_Y_RATIO)
 
     text = _strip_markdown(message).strip()
     font = None
@@ -70,31 +72,33 @@ def build_welcome_card(background_path: str, avatar_bytes: bytes, message: str =
     line_height = 0
     text_width = 0
     if text:
-        text_top_guess = avatar_top + avatar_size + text_gap
         max_width = int(background.width * 0.85)
-        max_height = background.height - text_top_guess - int(background.height * 0.05)
+        max_height = background.height - avatar_size - text_gap - 2 * padding_y
         if max_height > MIN_FONT_SIZE:
             font, lines, line_height = _fit_text(measure, text, max_width, max_height)
             text_width = max((measure.textlength(line, font=font) for line in lines), default=0)
 
     text_block_height = line_height * len(lines)
-    text_top = avatar_top + avatar_size + text_gap if lines else avatar_top + avatar_size
-
     content_width = max(avatar_size, text_width)
-    content_bottom = text_top + text_block_height if lines else avatar_top + avatar_size
+    content_height = avatar_size + (text_gap + text_block_height if lines else 0)
 
-    padding_x = int(background.width * PANEL_PADDING_X_RATIO)
-    padding_y = int(background.height * PANEL_PADDING_Y_RATIO)
+    panel_width = content_width + 2 * padding_x
+    panel_height = content_height + 2 * padding_y
+    panel_left = (background.width - panel_width) // 2
+    panel_top = (background.height - panel_height) // 2
     panel_box = (
-        max(0, (background.width - content_width) // 2 - padding_x),
-        max(0, avatar_top - padding_y),
-        min(background.width, (background.width + content_width) // 2 + padding_x),
-        min(background.height, content_bottom + padding_y),
+        max(0, panel_left),
+        max(0, panel_top),
+        min(background.width, panel_left + panel_width),
+        min(background.height, panel_top + panel_height),
     )
 
     overlay = Image.new("RGBA", background.size, (0, 0, 0, 0))
     ImageDraw.Draw(overlay).rounded_rectangle(panel_box, radius=padding_y * 2, fill=PANEL_FILL)
     background = Image.alpha_composite(background, overlay)
+
+    avatar_top = panel_top + padding_y
+    text_top = avatar_top + avatar_size + text_gap
 
     avatar = Image.open(BytesIO(avatar_bytes)).convert("RGBA").resize((avatar_size, avatar_size))
     mask = Image.new("L", (avatar_size, avatar_size), 0)
