@@ -13,6 +13,7 @@ log = logging.getLogger("peluso")
 INITIAL_COGS = (
     "bot.cogs.general",
     "bot.cogs.welcome",
+    "bot.cogs.voice_rooms",
 )
 
 

@@ -85,3 +85,19 @@ async def fetch_guild_roles(guild_id: int) -> list[dict]:
 
     assignable = [role for role in roles if role["id"] != str(guild_id) and not role.get("managed")]
     return sorted(assignable, key=lambda r: r["position"], reverse=True)
+
+
+# Tipo de canal 2 = GUILD_VOICE (https://discord.com/developers/docs/resources/channel#channel-object-channel-types)
+GUILD_VOICE_CHANNEL_TYPE = 2
+
+
+async def fetch_guild_voice_channels(guild_id: int) -> list[dict]:
+    """Canales de voz del servidor, consultados con el token del bot."""
+    headers = {"Authorization": f"Bot {settings.discord_token}"}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{API_BASE}/guilds/{guild_id}/channels", headers=headers)
+        response.raise_for_status()
+        channels = response.json()
+
+    voice_channels = [channel for channel in channels if channel.get("type") == GUILD_VOICE_CHANNEL_TYPE]
+    return sorted(voice_channels, key=lambda c: c["position"])

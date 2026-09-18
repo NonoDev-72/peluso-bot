@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, DateTime, String, create_engine, text
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 from shared.config import settings
@@ -53,6 +53,30 @@ class GuildConfig(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class VoiceRoomTrigger(Base):
+    """Canal de voz 'Crear Sala' configurado desde el panel web: al entrar, genera una sala temporal."""
+
+    __tablename__ = "voice_room_triggers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    guild_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    trigger_channel_id: Mapped[int] = mapped_column(BigInteger, unique=True)
+    name_template: Mapped[str] = mapped_column(String(100), default="Sala {n}")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class TempVoiceChannel(Base):
+    """Sala de voz temporal creada por el bot, borrada automáticamente cuando queda vacía."""
+
+    __tablename__ = "temp_voice_channels"
+
+    channel_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    guild_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    trigger_id: Mapped[int] = mapped_column(ForeignKey("voice_room_triggers.id"))
+    number: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 def init_db() -> None:
     Base.metadata.create_all(engine)
     _run_migrations()
@@ -80,3 +104,61 @@ def get_or_create_guild_config(session, guild_id: int, guild_name: str = "") -> 
         config.guild_name = guild_name
         session.commit()
     return config
+
+
+def list_voice_room_triggers(session, guild_id: int) -> list[VoiceRoomTrigger]:
+    return (
+        session.query(VoiceRoomTrigger)
+        .filter_by(guild_id=guild_id)
+        .order_by(VoiceRoomTrigger.id)
+        .all()
+    )
+
+
+def get_voice_room_trigger_by_channel(session, guild_id: int, channel_id: int) -> VoiceRoomTrigger | None:
+    return (
+        session.query(VoiceRoomTrigger)
+        .filter_by(guild_id=guild_id, trigger_channel_id=channel_id)
+        .first()
+    )
+
+
+def create_voice_room_trigger(session, guild_id: int, trigger_channel_id: int, name_template: str) -> VoiceRoomTrigger:
+    trigger = VoiceRoomTrigger(guild_id=guild_id, trigger_channel_id=trigger_channel_id, name_template=name_template)
+    session.add(trigger)
+    session.commit()
+    session.refresh(trigger)
+    return trigger
+
+
+def delete_voice_room_trigger(session, guild_id: int, trigger_id: int) -> None:
+    trigger = session.get(VoiceRoomTrigger, trigger_id)
+    if trigger is None or trigger.guild_id != guild_id:
+        return
+    session.query(TempVoiceChannel).filter_by(trigger_id=trigger_id).delete()
+    session.delete(trigger)
+    session.commit()
+
+
+def next_room_number(session, trigger_id: int) -> int:
+    used = {row.number for row in session.query(TempVoiceChannel).filter_by(trigger_id=trigger_id).all()}
+    number = 1
+    while number in used:
+        number += 1
+    return number
+
+
+def create_temp_voice_channel(session, channel_id: int, guild_id: int, trigger_id: int, number: int) -> None:
+    session.add(TempVoiceChannel(channel_id=channel_id, guild_id=guild_id, trigger_id=trigger_id, number=number))
+    session.commit()
+
+
+def get_temp_voice_channel(session, channel_id: int) -> TempVoiceChannel | None:
+    return session.get(TempVoiceChannel, channel_id)
+
+
+def delete_temp_voice_channel(session, channel_id: int) -> None:
+    temp_channel = session.get(TempVoiceChannel, channel_id)
+    if temp_channel is not None:
+        session.delete(temp_channel)
+        session.commit()

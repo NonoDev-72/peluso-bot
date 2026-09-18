@@ -27,6 +27,10 @@ body {
 }
 .btn-primary { background: #7289da; color: white; }
 .btn-ghost { background: transparent; color: #aaa; border: 1px solid #2a2e37; }
+.btn-danger { background: transparent; color: #e57373; border: 1px solid #e57373; padding: 0.35rem 0.8rem; }
+.table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.table th, .table td { text-align: left; padding: 0.6rem; border-bottom: 1px solid #2a2e37; font-size: 0.9rem; }
+.table th { color: #888; font-weight: 600; }
 .hero { text-align: center; padding: 4rem 1rem; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
 .card {
