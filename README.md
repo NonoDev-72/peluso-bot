@@ -5,7 +5,11 @@ configurar todo sin tocar código: bienvenidas con tarjeta de imagen, despedidas
 temporales, todo administrable server por server con tu login de Discord.
 
 [![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-yellow.svg)](LICENSE)
-[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](requirements.txt)
+[![Python](https://img.shields.io/badge/Python-3776AB.svg?logo=python&logoColor=white)](requirements.txt)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26.svg?logo=html5&logoColor=white)](web/templates)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6.svg?logo=css3&logoColor=white)](web/static/style.css)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E.svg?logo=javascript&logoColor=black)](web/templates/guild_settings.html)
+[![Docker](https://img.shields.io/badge/Docker-2496ED.svg?logo=docker&logoColor=white)](Dockerfile)
 [![discord.py](https://img.shields.io/badge/discord.py-2.4%2B-5865F2.svg)](https://discordpy.readthedocs.io/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688.svg)](https://fastapi.tiangolo.com/)
 
@@ -72,13 +76,6 @@ Guía completa paso a paso (incluye cómo crear la app en Discord, permisos nece
 
 Python 3.12 · [discord.py](https://discordpy.readthedocs.io/) · [FastAPI](https://fastapi.tiangolo.com/) ·
 [SQLAlchemy](https://www.sqlalchemy.org/) · [Pillow](https://pillow.readthedocs.io/) · Jinja2 · Discord OAuth2
-
-## 🗺️ Próximos pasos sugeridos
-
-- Migrar la persistencia del bot a llamadas async (por ejemplo con SQLAlchemy async) si el volumen de
-  servidores crece.
-- Agregar refresco automático del token OAuth cuando expire.
-- Sumar más cogs (moderación, niveles, etc.) siguiendo el patrón de `bot/cogs/`.
 
 ## Licencia
 
