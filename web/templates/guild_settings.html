@@ -142,7 +142,8 @@
 <script>
 (function () {
   var basePath = {{ base_path | tojson }};
-  var guildId = {{ config.guild_id }};
+  // El id del servidor supera 2^53: como número JS perdería precisión (Discord snowflakes son de 64 bits).
+  var guildId = {{ config.guild_id | string | tojson }};
   var select = document.getElementById("welcome-font-select");
   var messageField = document.querySelector('textarea[name="welcome_message"]');
   var preview = document.getElementById("welcome-font-preview");
