@@ -45,19 +45,24 @@ class Welcome(commands.Cog):
             guild=member.guild.name,
             member_count=member.guild.member_count,
         )
+        card_text = config.welcome_message.format(
+            member=member.display_name,
+            guild=member.guild.name,
+            member_count=member.guild.member_count,
+        )
 
-        file = await self._build_welcome_card_file(member, config.welcome_background_path)
+        file = await self._build_welcome_card_file(member, config.welcome_background_path, card_text)
         await channel.send(text, file=file)
 
     async def _build_welcome_card_file(
-        self, member: discord.Member, background_path: str | None
+        self, member: discord.Member, background_path: str | None, card_text: str
     ) -> discord.File | None:
         if not background_path or not os.path.isfile(background_path):
             return None
 
         try:
             avatar_bytes = await member.display_avatar.replace(size=256, static_format="png").read()
-            buffer = build_welcome_card(background_path, avatar_bytes)
+            buffer = build_welcome_card(background_path, avatar_bytes, card_text)
         except Exception:
             log.exception("No se pudo generar la tarjeta de bienvenida para %s en %s", member, member.guild.name)
             return None
