@@ -43,17 +43,27 @@ class VoiceRooms(commands.Cog):
         except (KeyError, IndexError):
             name = f"Sala {number}"
 
-        overwrites = channel.category.overwrites if channel.category else None
         try:
             new_channel = await channel.guild.create_voice_channel(
                 name=name,
                 category=channel.category,
-                overwrites=overwrites,
                 reason=f"Sala temporal solicitada por {member}",
             )
         except discord.Forbidden:
             log.warning("Sin permisos para crear canales de voz en %s", channel.guild.name)
             return
+
+        if channel.category is not None and new_channel.category_id != channel.category.id:
+            try:
+                await new_channel.edit(category=channel.category, sync_permissions=True)
+            except discord.Forbidden:
+                log.warning(
+                    "La sala temporal '%s' se creó fuera de la categoría de '%s' en %s: "
+                    "verificá que el rol del bot tenga permiso 'Gestionar canales' en esa categoría",
+                    new_channel.name,
+                    channel.name,
+                    channel.guild.name,
+                )
 
         with SessionLocal() as session:
             create_temp_voice_channel(session, new_channel.id, channel.guild.id, trigger_id, number)
