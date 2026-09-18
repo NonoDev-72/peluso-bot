@@ -1,8 +1,10 @@
 import logging
+import os
 
 import discord
 from discord.ext import commands
 
+from bot.welcome_card import build_welcome_card
 from shared.database import SessionLocal, get_or_create_guild_config
 
 log = logging.getLogger("peluso")
@@ -43,7 +45,24 @@ class Welcome(commands.Cog):
             guild=member.guild.name,
             member_count=member.guild.member_count,
         )
-        await channel.send(text)
+
+        file = await self._build_welcome_card_file(member, config.welcome_background_path)
+        await channel.send(text, file=file)
+
+    async def _build_welcome_card_file(
+        self, member: discord.Member, background_path: str | None
+    ) -> discord.File | None:
+        if not background_path or not os.path.isfile(background_path):
+            return None
+
+        try:
+            avatar_bytes = await member.display_avatar.replace(size=256, static_format="png").read()
+            buffer = build_welcome_card(background_path, avatar_bytes)
+        except Exception:
+            log.exception("No se pudo generar la tarjeta de bienvenida para %s en %s", member, member.guild.name)
+            return None
+
+        return discord.File(buffer, filename="bienvenida.png")
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member) -> None:

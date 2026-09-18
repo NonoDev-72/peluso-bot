@@ -3,7 +3,7 @@
 {% block content %}
 <a class="back" href="{{ base_path }}/dashboard">&larr; Volver</a>
 <h1>Bienvenida y despedida</h1>
-<form method="post" class="form">
+<form method="post" class="form" enctype="multipart/form-data">
   <fieldset>
     <legend>Bienvenida</legend>
     <label class="check">
@@ -18,6 +18,17 @@
       Mensaje (usá {member}, {guild}, {member_count})
       <textarea name="welcome_message" rows="3">{{ config.welcome_message }}</textarea>
     </label>
+    <label>
+      Imagen de fondo (el avatar del usuario se superpone centrado; PNG, JPEG o WEBP)
+      <input type="file" name="welcome_background" accept="image/png,image/jpeg,image/webp" />
+    </label>
+    {% if config.welcome_background_path %}
+    <img class="bg-preview" src="{{ base_path }}/dashboard/{{ config.guild_id }}/welcome-background" alt="Fondo actual" />
+    <label class="check">
+      <input type="checkbox" name="remove_welcome_background" />
+      Quitar la imagen de fondo actual
+    </label>
+    {% endif %}
   </fieldset>
 
   <fieldset>

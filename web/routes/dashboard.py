@@ -1,6 +1,9 @@
+import os
+import uuid
+
 import httpx
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from shared.config import settings
@@ -18,6 +21,8 @@ from web.discord_oauth import fetch_guild_roles, fetch_guild_voice_channels, fet
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 templates = Jinja2Templates(directory="web/templates")
+
+ALLOWED_BACKGROUND_TYPES = {"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp"}
 
 
 @router.get("")
@@ -82,6 +87,8 @@ async def update_guild(
     welcome_enabled: bool = Form(False),
     welcome_channel_id: str = Form(""),
     welcome_message: str = Form(...),
+    welcome_background: UploadFile | None = File(None),
+    remove_welcome_background: bool = Form(False),
     goodbye_enabled: bool = Form(False),
     goodbye_channel_id: str = Form(""),
     goodbye_message: str = Form(...),
@@ -100,9 +107,50 @@ async def update_guild(
         config.goodbye_channel_id = int(goodbye_channel_id) if goodbye_channel_id else None
         config.goodbye_message = goodbye_message
         config.default_role_id = int(default_role_id) if default_role_id else None
+
+        if remove_welcome_background:
+            _delete_background_file(config.welcome_background_path)
+            config.welcome_background_path = None
+        elif welcome_background is not None and welcome_background.filename:
+            extension = ALLOWED_BACKGROUND_TYPES.get(welcome_background.content_type)
+            if extension is None:
+                raise HTTPException(status_code=400, detail="La imagen de fondo debe ser PNG, JPEG o WEBP")
+            _delete_background_file(config.welcome_background_path)
+            config.welcome_background_path = _save_background_file(guild_id, welcome_background, extension)
+
         session.commit()
 
     return RedirectResponse(f"{settings.web_base_path}/dashboard/{guild_id}", status_code=303)
+
+
+def _save_background_file(guild_id: int, upload: UploadFile, extension: str) -> str:
+    os.makedirs(settings.uploads_dir, exist_ok=True)
+    filename = f"welcome_bg_{guild_id}_{uuid.uuid4().hex}{extension}"
+    path = os.path.join(settings.uploads_dir, filename)
+    with open(path, "wb") as out_file:
+        out_file.write(upload.file.read())
+    return path
+
+
+def _delete_background_file(path: str | None) -> None:
+    if path and os.path.isfile(path):
+        os.remove(path)
+
+
+@router.get("/{guild_id}/welcome-background")
+async def get_welcome_background(guild_id: int, user=Depends(get_current_user)):
+    guilds = await fetch_manageable_guilds(user.access_token)
+    if not any(int(g["id"]) == guild_id for g in guilds):
+        raise HTTPException(status_code=403, detail="No tenes permisos sobre ese servidor")
+
+    with SessionLocal() as session:
+        config = get_or_create_guild_config(session, guild_id)
+        path = config.welcome_background_path
+
+    if not path or not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="No hay imagen de fondo configurada")
+
+    return FileResponse(path)
 
 
 @router.post("/{guild_id}/voice-rooms")
