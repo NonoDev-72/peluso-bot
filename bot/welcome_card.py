@@ -4,12 +4,44 @@ from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
 
+FONTS_DIR = os.path.join(os.path.dirname(__file__), "assets", "fonts")
+
+# size_ratio ajusta el rango de tamaños de fuente probados para que distintas fuentes
+# (con proporciones de "em" muy distintas entre sí) terminen con una altura visual similar.
+FONT_CHOICES: dict[str, dict[str, object]] = {
+    "press_start_2p": {
+        "label": "Press Start 2P (arcade clásico)",
+        "file": "PressStart2P-Regular.ttf",
+        "size_ratio": 1.0,
+    },
+    "vt323": {
+        "label": "VT323 (terminal retro)",
+        "file": "VT323-Regular.ttf",
+        "size_ratio": 1.6,
+    },
+    "silkscreen": {
+        "label": "Silkscreen (pixel compacto)",
+        "file": "Silkscreen-Regular.ttf",
+        "size_ratio": 1.0,
+    },
+    "bungee": {
+        "label": "Bungee (arcade urbano)",
+        "file": "Bungee-Regular.ttf",
+        "size_ratio": 1.0,
+    },
+    "monoton": {
+        "label": "Monoton (neón)",
+        "file": "Monoton-Regular.ttf",
+        "size_ratio": 1.3,
+    },
+}
+DEFAULT_FONT_KEY = "press_start_2p"
+
 # El avatar circular ocupa esta fracción del lado más chico del fondo
 AVATAR_SIZE_RATIO = 0.32
-
-FONT_PATH = os.path.join(os.path.dirname(__file__), "assets", "fonts", "PressStart2P-Regular.ttf")
 MAX_FONT_SIZE = 36
 MIN_FONT_SIZE = 14
+STROKE_WIDTH = 2
 
 PANEL_FILL = (0, 0, 0, 140)
 PANEL_PADDING_X_RATIO = 0.06
@@ -17,11 +49,23 @@ PANEL_PADDING_Y_RATIO = 0.05
 AVATAR_TEXT_GAP_RATIO = 0.03
 
 _MARKDOWN_PATTERN = re.compile(r"[*_`~]")
+_LINE_HEIGHT_PROBE = "AÁÑÓgjpqy!¡"
 
 
 def _strip_markdown(text: str) -> str:
     """Los caracteres de Markdown de Discord (**, _, etc.) no tienen sentido dibujados en la imagen."""
     return _MARKDOWN_PATTERN.sub("", text)
+
+
+def _font_choice(font_key: str) -> dict[str, object]:
+    return FONT_CHOICES.get(font_key, FONT_CHOICES[DEFAULT_FONT_KEY])
+
+
+def _line_height(font: ImageFont.FreeTypeFont) -> int:
+    """Altura real de línea para esta fuente y tamaño, medida en vez de estimada, para que
+    el cálculo funcione igual de bien con fuentes de proporciones muy distintas."""
+    _, top, _, bottom = font.getbbox(_LINE_HEIGHT_PROBE, stroke_width=STROKE_WIDTH)
+    return int((bottom - top) * 1.3)
 
 
 def _wrap_text(measure: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, max_width: int) -> list[str]:
@@ -41,25 +85,35 @@ def _wrap_text(measure: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeType
 
 
 def _fit_text(
-    measure: ImageDraw.ImageDraw, text: str, max_width: int, max_height: int
+    measure: ImageDraw.ImageDraw, text: str, max_width: int, max_height: int, font_path: str, size_ratio: float
 ) -> tuple[ImageFont.FreeTypeFont, list[str], int]:
-    for size in range(MAX_FONT_SIZE, MIN_FONT_SIZE - 1, -2):
-        font = ImageFont.truetype(FONT_PATH, size)
+    max_size = max(MIN_FONT_SIZE, int(MAX_FONT_SIZE * size_ratio))
+    min_size = max(8, int(MIN_FONT_SIZE * size_ratio))
+    step = max(1, int(2 * size_ratio))
+
+    for size in range(max_size, min_size - 1, -step):
+        font = ImageFont.truetype(font_path, size)
         lines = _wrap_text(measure, text, font, max_width)
-        line_height = int(size * 1.6)
+        line_height = _line_height(font)
         if line_height * len(lines) <= max_height:
             return font, lines, line_height
 
-    font = ImageFont.truetype(FONT_PATH, MIN_FONT_SIZE)
+    font = ImageFont.truetype(font_path, min_size)
     lines = _wrap_text(measure, text, font, max_width)
-    return font, lines, int(MIN_FONT_SIZE * 1.6)
+    return font, lines, _line_height(font)
 
 
-def build_welcome_card(background_path: str, avatar_bytes: bytes, message: str = "") -> BytesIO:
+def build_welcome_card(
+    background_path: str, avatar_bytes: bytes, message: str = "", font_key: str = DEFAULT_FONT_KEY
+) -> BytesIO:
     """Compone el avatar del usuario y el mensaje de bienvenida en letras arcade, agrupados sobre un panel
     semitransparente para que se distingan del fondo."""
     background = Image.open(background_path).convert("RGBA")
     measure = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+
+    choice = _font_choice(font_key)
+    font_path = os.path.join(FONTS_DIR, choice["file"])
+    size_ratio = choice["size_ratio"]
 
     avatar_size = int(min(background.size) * AVATAR_SIZE_RATIO)
     text_gap = int(background.height * AVATAR_TEXT_GAP_RATIO)
@@ -75,7 +129,7 @@ def build_welcome_card(background_path: str, avatar_bytes: bytes, message: str =
         max_width = int(background.width * 0.85)
         max_height = background.height - avatar_size - text_gap - 2 * padding_y
         if max_height > MIN_FONT_SIZE:
-            font, lines, line_height = _fit_text(measure, text, max_width, max_height)
+            font, lines, line_height = _fit_text(measure, text, max_width, max_height, font_path, size_ratio)
             text_width = max((measure.textlength(line, font=font) for line in lines), default=0)
 
     text_block_height = line_height * len(lines)
@@ -114,7 +168,7 @@ def build_welcome_card(background_path: str, avatar_bytes: bytes, message: str =
         for line in lines:
             width = draw.textlength(line, font=font)
             x = (background.width - width) // 2
-            draw.text((x, y), line, font=font, fill="white", stroke_width=2, stroke_fill="black")
+            draw.text((x, y), line, font=font, fill="white", stroke_width=STROKE_WIDTH, stroke_fill="black")
             y += line_height
 
     buffer = BytesIO()

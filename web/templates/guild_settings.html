@@ -29,6 +29,14 @@
       Quitar la imagen de fondo actual
     </label>
     {% endif %}
+    <label>
+      Tipografía de la tarjeta
+      <select name="welcome_font">
+        {% for key, choice in font_choices.items() %}
+        <option value="{{ key }}" {% if config.welcome_font == key %}selected{% endif %}>{{ choice.label }}</option>
+        {% endfor %}
+      </select>
+    </label>
   </fieldset>
 
   <fieldset>

@@ -44,6 +44,7 @@ class GuildConfig(Base):
         String(2000), default="¡Bienvenido/a {member} a **{guild}**! Ya somos {member_count}."
     )
     welcome_background_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    welcome_font: Mapped[str] = mapped_column(String(50), default="press_start_2p")
 
     goodbye_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
     goodbye_channel_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
@@ -94,6 +95,11 @@ def _run_migrations() -> None:
             conn.commit()
         if "welcome_background_path" not in existing_columns:
             conn.execute(text("ALTER TABLE guild_configs ADD COLUMN welcome_background_path VARCHAR(255)"))
+            conn.commit()
+        if "welcome_font" not in existing_columns:
+            conn.execute(
+                text("ALTER TABLE guild_configs ADD COLUMN welcome_font VARCHAR(50) DEFAULT 'press_start_2p'")
+            )
             conn.commit()
 
 

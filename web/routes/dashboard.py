@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
+from bot.welcome_card import DEFAULT_FONT_KEY, FONT_CHOICES
 from shared.config import settings
 from shared.database import (
     GuildConfig,
@@ -75,6 +76,7 @@ async def edit_guild(request: Request, guild_id: int, user=Depends(get_current_u
             "voice_channels_error": voice_channels_error,
             "voice_room_triggers": voice_room_triggers,
             "voice_channel_names": voice_channel_names,
+            "font_choices": FONT_CHOICES,
         },
     )
 
@@ -89,6 +91,7 @@ async def update_guild(
     welcome_message: str = Form(...),
     welcome_background: UploadFile | None = File(None),
     remove_welcome_background: bool = Form(False),
+    welcome_font: str = Form(DEFAULT_FONT_KEY),
     goodbye_enabled: bool = Form(False),
     goodbye_channel_id: str = Form(""),
     goodbye_message: str = Form(...),
@@ -103,6 +106,7 @@ async def update_guild(
         config.welcome_enabled = welcome_enabled
         config.welcome_channel_id = int(welcome_channel_id) if welcome_channel_id else None
         config.welcome_message = welcome_message
+        config.welcome_font = welcome_font if welcome_font in FONT_CHOICES else DEFAULT_FONT_KEY
         config.goodbye_enabled = goodbye_enabled
         config.goodbye_channel_id = int(goodbye_channel_id) if goodbye_channel_id else None
         config.goodbye_message = goodbye_message
