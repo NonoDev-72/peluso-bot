@@ -1,3 +1,4 @@
+import time
 from urllib.parse import urlencode
 
 import httpx
@@ -12,6 +13,10 @@ SCOPES = "identify guilds"
 
 # Permiso "Manage Server" requerido para administrar la config de un guild desde el panel
 MANAGE_GUILD_PERMISSION = 0x20
+
+# /users/@me/guilds tiene un rate limit mas agresivo que el resto de la API de Discord
+GUILDS_CACHE_TTL_SECONDS = 30
+_guilds_cache: dict[str, tuple[float, list[dict]]] = {}
 
 
 def build_authorize_url(state: str) -> str:
@@ -51,14 +56,20 @@ async def fetch_user(access_token: str) -> dict:
 
 async def fetch_manageable_guilds(access_token: str) -> list[dict]:
     """Guilds donde el usuario tiene permiso de administrar el servidor."""
+    cached = _guilds_cache.get(access_token)
+    if cached and time.monotonic() - cached[0] < GUILDS_CACHE_TTL_SECONDS:
+        return cached[1]
+
     headers = {"Authorization": f"Bearer {access_token}"}
     async with httpx.AsyncClient() as client:
         response = await client.get(f"{API_BASE}/users/@me/guilds", headers=headers)
         response.raise_for_status()
         guilds = response.json()
 
-    return [
+    manageable = [
         guild
         for guild in guilds
         if guild.get("owner") or (int(guild.get("permissions", 0)) & MANAGE_GUILD_PERMISSION)
     ]
+    _guilds_cache[access_token] = (time.monotonic(), manageable)
+    return manageable
