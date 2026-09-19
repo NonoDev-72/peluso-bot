@@ -14,6 +14,30 @@ SCOPES = "identify guilds"
 # Permiso "Manage Server" requerido para administrar la config de un guild desde el panel
 MANAGE_GUILD_PERMISSION = 0x20
 
+# Permisos que necesita el bot para sus features (ver bot/cogs/*.py): ver canales, enviar mensajes,
+# adjuntar/incrustar la tarjeta de bienvenida, gestionar roles (rol automatico), gestionar canales y
+# mover miembros (salas de voz temporales).
+BOT_INVITE_PERMISSIONS = (
+    0x400  # View Channels
+    | 0x800  # Send Messages
+    | 0x8000  # Attach Files
+    | 0x4000  # Embed Links
+    | 0x10  # Manage Channels
+    | 0x1000000  # Move Members
+    | 0x10000000  # Manage Roles
+)
+
+
+def build_bot_invite_url(guild_id: int) -> str:
+    params = {
+        "client_id": settings.discord_client_id,
+        "permissions": BOT_INVITE_PERMISSIONS,
+        "scope": "bot",
+        "guild_id": guild_id,
+        "disable_guild_select": "true",
+    }
+    return f"{AUTHORIZE_URL}?{urlencode(params)}"
+
 # /users/@me/guilds tiene un rate limit mas agresivo que el resto de la API de Discord.
 # El preview de la tarjeta de bienvenida la consulta en cada cambio de fuente/texto, así que
 # el cache dura más que en el resto del panel para no comerse el rate limit con ese uso repetido.
@@ -75,6 +99,17 @@ async def fetch_manageable_guilds(access_token: str) -> list[dict]:
     ]
     _guilds_cache[access_token] = (time.monotonic(), manageable)
     return manageable
+
+
+async def is_bot_in_guild(guild_id: int) -> bool:
+    """Chequea con el token del bot si esta en el guild (403 = no es miembro)."""
+    headers = {"Authorization": f"Bot {settings.discord_token}"}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{API_BASE}/guilds/{guild_id}", headers=headers)
+    if response.status_code == 403:
+        return False
+    response.raise_for_status()
+    return True
 
 
 async def fetch_guild_roles(guild_id: int) -> list[dict]:

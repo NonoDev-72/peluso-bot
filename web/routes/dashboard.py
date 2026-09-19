@@ -22,7 +22,13 @@ from shared.database import (
     list_voice_room_triggers,
 )
 from web.auth import get_current_user
-from web.discord_oauth import fetch_guild_roles, fetch_guild_voice_channels, fetch_manageable_guilds
+from web.discord_oauth import (
+    build_bot_invite_url,
+    fetch_guild_roles,
+    fetch_guild_voice_channels,
+    fetch_manageable_guilds,
+    is_bot_in_guild,
+)
 
 log = logging.getLogger("peluso")
 
@@ -44,8 +50,20 @@ async def list_guilds(request: Request, user=Depends(get_current_user)):
 @router.get("/{guild_id}")
 async def edit_guild(request: Request, guild_id: int, user=Depends(get_current_user)):
     guilds = await fetch_manageable_guilds(user.access_token)
-    if not any(int(g["id"]) == guild_id for g in guilds):
+    guild = next((g for g in guilds if int(g["id"]) == guild_id), None)
+    if guild is None:
         raise HTTPException(status_code=403, detail="No tenes permisos sobre ese servidor")
+
+    if not await is_bot_in_guild(guild_id):
+        return templates.TemplateResponse(
+            request,
+            "guild_invite.html",
+            {
+                "user": user,
+                "guild": guild,
+                "invite_url": build_bot_invite_url(guild_id),
+            },
+        )
 
     with SessionLocal() as session:
         config = get_or_create_guild_config(session, guild_id)

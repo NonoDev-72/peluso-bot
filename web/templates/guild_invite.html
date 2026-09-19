@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Invitar al bot{% endblock %}
+{% block content %}
+<a class="back" href="{{ base_path }}/dashboard">&larr; Volver</a>
+<div class="hero">
+  <div class="hero-card">
+    {% if guild.icon %}
+      <img class="icon" style="margin: 0 auto 0.75rem;" src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png" alt="" />
+    {% else %}
+      <span class="hero-icon">🤖</span>
+    {% endif %}
+    <h1>Peluso Bot no está en {{ guild.name }}</h1>
+    <p>Invitalo con los permisos necesarios para poder configurar bienvenidas, rol automático y salas de voz.</p>
+    <a class="btn btn-primary btn-lg" href="{{ invite_url }}" target="_blank" rel="noopener">Invitar a {{ guild.name }}</a>
+  </div>
+</div>
+{% endblock %}
