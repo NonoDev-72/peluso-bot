@@ -2,6 +2,7 @@ import logging
 import os
 import tempfile
 import uuid
+from urllib.parse import quote
 
 import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
@@ -130,7 +131,9 @@ async def update_guild(
 
         session.commit()
 
-    return RedirectResponse(f"{settings.web_base_path}/dashboard/{guild_id}", status_code=303)
+    return RedirectResponse(
+        f"{settings.web_base_path}/dashboard/{guild_id}?toast={quote('Cambios guardados')}", status_code=303
+    )
 
 
 def _save_background_file(guild_id: int, upload: UploadFile, extension: str) -> str:
@@ -239,7 +242,10 @@ async def create_voice_room(
         if existing is None:
             create_voice_room_trigger(session, guild_id, channel_id, template)
 
-    return RedirectResponse(f"{settings.web_base_path}/dashboard/{guild_id}", status_code=303)
+    return RedirectResponse(
+        f"{settings.web_base_path}/dashboard/{guild_id}?toast={quote('Canal \"Crear Sala\" agregado')}",
+        status_code=303,
+    )
 
 
 @router.post("/{guild_id}/voice-rooms/{trigger_id}/delete")
@@ -256,4 +262,6 @@ async def delete_voice_room(
     with SessionLocal() as session:
         delete_voice_room_trigger(session, guild_id, trigger_id)
 
-    return RedirectResponse(f"{settings.web_base_path}/dashboard/{guild_id}", status_code=303)
+    return RedirectResponse(
+        f"{settings.web_base_path}/dashboard/{guild_id}?toast={quote('Canal eliminado')}", status_code=303
+    )

@@ -323,6 +323,52 @@ input[type="file"]::file-selector-button:hover {
 .legal p, .legal li { color: #ccc; }
 .legal a { color: var(--accent); }
 .legal ul { padding-left: 1.25rem; }
+/* Toasts */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 100;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.6rem;
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 1.1rem;
+  box-shadow: var(--shadow-elevated);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  animation: toast-in 0.25s ease, toast-out 0.25s ease 3.2s forwards;
+}
+.toast-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toast-out {
+  to { opacity: 0; transform: translateY(8px); }
+}
+
 .error-page {
   min-height: calc(100vh - 180px);
   display: flex;
