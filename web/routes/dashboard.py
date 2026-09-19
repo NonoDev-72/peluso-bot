@@ -54,7 +54,13 @@ async def edit_guild(request: Request, guild_id: int, user=Depends(get_current_u
     if guild is None:
         raise HTTPException(status_code=403, detail="No tenes permisos sobre ese servidor")
 
-    if not await is_bot_in_guild(guild_id):
+    try:
+        bot_in_guild = await is_bot_in_guild(guild_id)
+    except httpx.HTTPStatusError:
+        log.warning("is_bot_in_guild: fallo consultando guild_id=%s, se asume que el bot esta", guild_id)
+        bot_in_guild = True
+
+    if not bot_in_guild:
         return templates.TemplateResponse(
             request,
             "guild_invite.html",

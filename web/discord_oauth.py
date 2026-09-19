@@ -102,11 +102,11 @@ async def fetch_manageable_guilds(access_token: str) -> list[dict]:
 
 
 async def is_bot_in_guild(guild_id: int) -> bool:
-    """Chequea con el token del bot si esta en el guild (403 = no es miembro)."""
+    """Chequea con el token del bot si esta en el guild (403/404 = no es miembro)."""
     headers = {"Authorization": f"Bot {settings.discord_token}"}
     async with httpx.AsyncClient() as client:
         response = await client.get(f"{API_BASE}/guilds/{guild_id}", headers=headers)
-    if response.status_code == 403:
+    if response.status_code in (403, 404):
         return False
     response.raise_for_status()
     return True
