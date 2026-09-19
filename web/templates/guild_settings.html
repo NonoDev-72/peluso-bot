@@ -5,10 +5,11 @@
 <h1>Bienvenida y despedida</h1>
 <form method="post" class="form" enctype="multipart/form-data">
   <fieldset>
-    <legend>Bienvenida</legend>
-    <label class="check">
+    <legend>👋 Bienvenida</legend>
+    <label class="switch">
       <input type="checkbox" name="welcome_enabled" {% if config.welcome_enabled %}checked{% endif %} />
-      Activar mensaje de bienvenida
+      <span class="switch-track"><span class="switch-thumb"></span></span>
+      <span>Activar mensaje de bienvenida</span>
     </label>
     <label>
       ID del canal
@@ -24,9 +25,10 @@
     </label>
     {% if config.welcome_background_path %}
     <img class="bg-preview" src="{{ base_path }}/dashboard/{{ config.guild_id }}/welcome-background" alt="Fondo actual" />
-    <label class="check">
+    <label class="switch">
       <input type="checkbox" name="remove_welcome_background" />
-      Quitar la imagen de fondo actual
+      <span class="switch-track"><span class="switch-thumb"></span></span>
+      <span>Quitar la imagen de fondo actual</span>
     </label>
     {% endif %}
     <label>
@@ -42,7 +44,7 @@
   </fieldset>
 
   <fieldset>
-    <legend>Rol automático</legend>
+    <legend>🎭 Rol automático</legend>
     {% if roles_error %}
       <p class="hint hint-error">{{ roles_error }}</p>
       <input type="hidden" name="default_role_id" value="{{ config.default_role_id or '' }}" />
@@ -63,10 +65,11 @@
   </fieldset>
 
   <fieldset>
-    <legend>Despedida</legend>
-    <label class="check">
+    <legend>🚪 Despedida</legend>
+    <label class="switch">
       <input type="checkbox" name="goodbye_enabled" {% if config.goodbye_enabled %}checked{% endif %} />
-      Activar mensaje de despedida
+      <span class="switch-track"><span class="switch-thumb"></span></span>
+      <span>Activar mensaje de despedida</span>
     </label>
     <label>
       ID del canal
@@ -81,7 +84,7 @@
   <button class="btn btn-primary" type="submit">Guardar cambios</button>
 </form>
 
-<h1>Salas de voz temporales</h1>
+<h1>🔊 Salas de voz temporales</h1>
 <p class="hint">
   Cuando alguien entra a un canal "Crear Sala" configurado abajo, el bot le crea una sala de voz
   temporal (usando el nombre elegido, donde <code>{n}</code> es reemplazado por el número de sala) y lo mueve
@@ -106,7 +109,7 @@
       <td>{{ trigger.name_template }}</td>
       <td>
         <form method="post" action="{{ base_path }}/dashboard/{{ config.guild_id }}/voice-rooms/{{ trigger.id }}/delete">
-          <button class="btn btn-danger" type="submit">Eliminar</button>
+          <button class="btn btn-danger btn-sm" type="submit">🗑 Eliminar</button>
         </form>
       </td>
     </tr>
@@ -120,7 +123,7 @@
 
 <form method="post" action="{{ base_path }}/dashboard/{{ config.guild_id }}/voice-rooms" class="form">
   <fieldset>
-    <legend>Agregar canal "Crear Sala"</legend>
+    <legend>➕ Agregar canal "Crear Sala"</legend>
     <label>
       Canal de voz
       <select name="trigger_channel_id" required>
